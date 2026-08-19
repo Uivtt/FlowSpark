@@ -140,7 +140,7 @@ class OpenAiCompatibleClient(
             }
 
             val summary = argsJson.get("summary")?.asString ?: "工作流（${steps.size} 步）"
-            Result.success(ParsedWorkflow(steps = steps, summary = summary, rawJson = toolCall.arguments))
+            Result.success(ParsedWorkflow(steps = steps, summary = summary, rawJson = toolCall.arguments ?: ""))
         } catch (e: Exception) {
             if (e is IntentParseException) Result.failure(e)
             else Result.failure(IntentParseException("意图解析网络异常: ${e.message}", e))

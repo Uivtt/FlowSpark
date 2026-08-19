@@ -22,6 +22,7 @@ import com.flowspark.app.domain.model.StepType
 import com.flowspark.app.service.FlowSparkExecutionService
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
