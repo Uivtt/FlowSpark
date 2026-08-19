@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">FlowSpark</string>
+    <string name="chat_hint">说句话来编辑图片，例如：调亮一点，然后弄成黑白</string>
+    <string name="execute">确认执行</string>
+    <string name="cancel">取消</string>
+    <string name="add_step">添加步骤</string>
+    <string name="pick_image">选择图片</string>
+    <string name="executing">正在执行工作流…</string>
+    <string name="execution_done">工作流执行完成</string>
+    <string name="execution_failed">工作流执行失败</string>
+    <string name="network_error">网络开小差了，请重试</string>
+    <string name="quota_exceeded">今日配额已用完，明天再来吧</string>
+    <string name="parse_failed">我没听懂，请换一种说法</string>
+</resources>

@@ -1,0 +1,11 @@
+name = "flowspark-proxy"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# 供应商密钥通过环境变量注入，绝不写入代码仓库
+[vars]
+# 每日全局限额（请求次数），超限返回配额提示
+DAILY_GLOBAL_LIMIT = "1000"
+
+# 由 wrangler secret put 设置：
+# DEEPSEEK_API_KEY, TOGETHER_API_KEY, OPENAI_API_KEY
