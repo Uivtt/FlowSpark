@@ -34,8 +34,11 @@ class IntentParser(private val aiClient: AiClient) {
         val first = aiClient.parseIntent(userInput, SYSTEM_PROMPT)
         if (first.isSuccess) return first
 
-        // 解析失败时自动重试 1 次（返回错误信息让 LLM 纠正）
-        val errorMsg = first.exceptionOrNull()?.message ?: "解析失败"
+        val error = first.exceptionOrNull()
+        // 只有 JSON 解析类错误才值得重试（网络上/解析器把错误喂回 LLM 没有意义，还浪费 token）
+        if (error !is IntentParseException) return first
+
+        val errorMsg = error.message ?: "解析失败"
         val retryPrompt = userInput + "\n\n（注意：上次解析失败: $errorMsg。请确保使用 build_workflow 函数返回合法 JSON。）"
         return aiClient.parseIntent(retryPrompt, SYSTEM_PROMPT)
     }

@@ -215,16 +215,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 // ========== 对话消息模型 ==========
 
+/**
+ * 对话消息。
+ * @param id 唯一 ID（消息内容相同时 hashCode 相同，LazyColumn 必须用 id 做 key，
+ *           否则相同内容的两条消息会导致 Key already used 崩溃）
+ */
 data class ChatMessage(
+    val id: Long = nextId(),
     val role: Role,
     val text: String,
     val workflow: ParsedWorkflow? = null,
 ) {
     enum class Role { USER, ASSISTANT, SYSTEM }
     companion object {
-        fun user(text: String) = ChatMessage(Role.USER, text)
+        private val idCounter = java.util.concurrent.atomic.AtomicLong(0)
+        private fun nextId(): Long = idCounter.incrementAndGet()
+
+        fun user(text: String) = ChatMessage(role = Role.USER, text = text)
         fun assistant(text: String, workflow: ParsedWorkflow? = null) =
-            ChatMessage(Role.ASSISTANT, text, workflow)
-        fun system(text: String) = ChatMessage(Role.SYSTEM, text)
+            ChatMessage(role = Role.ASSISTANT, text = text, workflow = workflow)
+        fun system(text: String) = ChatMessage(role = Role.SYSTEM, text = text)
     }
 }

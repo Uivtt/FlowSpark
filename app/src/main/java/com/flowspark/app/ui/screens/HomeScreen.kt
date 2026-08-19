@@ -245,7 +245,7 @@ fun HomeScreen(
             }
 
             // 对话消息流
-            items(messages, key = { it.hashCode() }) { msg ->
+            items(messages, key = { it.id }) { msg ->
                 when (msg.role) {
                     ChatMessage.Role.USER -> {
                         Card(

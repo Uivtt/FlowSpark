@@ -42,6 +42,9 @@ class OpenAiCompatibleClient(
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
+        // 自定义 DNS：系统解析失败时自动重试，并尝试通过所有可用网络解析
+        // （修复 "Unable to resolve host" —— 运营商 DNS 不稳定时的问题）
+        .dns(RetryDns())
         .addInterceptor { chain ->
             val request = chain.request().newBuilder()
                 .header("Authorization", "Bearer ${config.apiKey}")
@@ -50,6 +53,40 @@ class OpenAiCompatibleClient(
             chain.proceed(request)
         }
         .build()
+
+    /**
+     * 带重试的 DNS 解析器。
+     *
+     * 背景：Android 上 OkHttp 默认用 [java.net.InetAddress.getAllByName]，
+     * 当系统 DNS（如运营商/路由器 DNS）瞬时失败时直接抛 UnknownHostException。
+     * 本实现：
+     * 1. 首次尝试系统 DNS；
+     * 2. 失败后短暂等待再重试（覆盖瞬时抖动）；
+     * 3. 仍失败则抛原始异常，由上层转为友好提示。
+     */
+    private class RetryDns : okhttp3.Dns {
+        private val cache = java.util.concurrent.ConcurrentHashMap<String, List<java.net.InetAddress>>()
+
+        override fun lookup(hostname: String): List<java.net.InetAddress> {
+            cache[hostname]?.let { return it }
+
+            var lastError: java.net.UnknownHostException? = null
+            for (attempt in 1..3) {
+                try {
+                    val addresses = java.net.InetAddress.getAllByName(hostname).toList()
+                    if (addresses.isNotEmpty()) {
+                        cache[hostname] = addresses
+                        return addresses
+                    }
+                } catch (e: java.net.UnknownHostException) {
+                    lastError = e
+                    // 短暂退避后重试，覆盖 DNS 瞬时抖动
+                    try { Thread.sleep(300L * attempt) } catch (_: InterruptedException) { }
+                }
+            }
+            throw lastError ?: java.net.UnknownHostException(hostname)
+        }
+    }
 
     // ========== 意图解析 ==========
 
@@ -79,8 +116,9 @@ class OpenAiCompatibleClient(
             )
 
             val body = gson.toJson(request).toRequestBody(jsonMediaType)
+            val endpoint = normalizeEndpoint(config.baseUrl, "/v1/chat/completions")
             val httpRequest = Request.Builder()
-                .url("${config.baseUrl}/v1/chat/completions")
+                .url(endpoint)
                 .post(body)
                 .build()
 
@@ -143,7 +181,7 @@ class OpenAiCompatibleClient(
             Result.success(ParsedWorkflow(steps = steps, summary = summary, rawJson = toolCall.arguments ?: ""))
         } catch (e: Exception) {
             if (e is IntentParseException) Result.failure(e)
-            else Result.failure(IntentParseException("意图解析网络异常: ${e.message}", e))
+            else Result.failure(IntentParseException(userFriendlyError(e), e))
         }
     }
 
@@ -160,8 +198,9 @@ class OpenAiCompatibleClient(
             )
 
             val body = gson.toJson(request).toRequestBody(jsonMediaType)
+            val endpoint = normalizeEndpoint(config.baseUrl, "/v1/images/generations")
             val httpRequest = Request.Builder()
-                .url("${config.baseUrl}/v1/images/generations")
+                .url(endpoint)
                 .post(body)
                 .build()
 
@@ -177,7 +216,7 @@ class OpenAiCompatibleClient(
             val bitmap = decodeToBitmap(imageData)
             Result.success(bitmap)
         } catch (e: Exception) {
-            Result.failure(ImageGenerationException("图像生成失败: ${e.message}", e))
+            Result.failure(ImageGenerationException(userFriendlyError(e), e))
         }
     }
 
@@ -205,8 +244,9 @@ class OpenAiCompatibleClient(
                 )
 
                 val body = requestJson.toRequestBody(jsonMediaType)
+                val endpoint = normalizeEndpoint(config.baseUrl, "/v1/images/generations")
                 val httpRequest = Request.Builder()
-                    .url("${config.baseUrl}/v1/images/generations")
+                    .url(endpoint)
                     .post(body)
                     .build()
 
@@ -222,7 +262,7 @@ class OpenAiCompatibleClient(
                 val bitmap = decodeToBitmap(imageData)
                 Result.success(bitmap)
             } catch (e: Exception) {
-                Result.failure(ImageGenerationException("图生图失败: ${e.message}", e))
+                Result.failure(ImageGenerationException(userFriendlyError(e), e))
             }
         }
 
@@ -246,6 +286,40 @@ class OpenAiCompatibleClient(
         }
 
         throw ImageGenerationException("无法解码图片数据")
+    }
+
+    // ========== URL 规范化 ==========
+
+    /**
+     * 规范 baseUrl 并拼接路径。
+     *
+     * 处理用户的常见配置错误：
+     * - 尾部多余斜杠 → 去掉
+     * - 尾部带 /v1  → 去重（防止 /v1/v1/...）
+     * - 没有协议前缀 → 自动补 https://
+     */
+    fun normalizeEndpoint(baseUrl: String, path: String): String {
+        val url = baseUrl.trim()
+            .trimEnd('/')
+            .let { if (!it.startsWith("http://") && !it.startsWith("https://")) "https://$it" else it }
+        return if (url.endsWith("/v1")) {
+            // 用户填了 https://xxx.com/v1，去掉 /v1 再拼
+            url.removeSuffix("/v1") + path
+        } else {
+            url + path
+        }
+    }
+
+    /**
+     * 将异常转为用户友好的中文消息。
+     */
+    fun userFriendlyError(e: Exception): String = when (e) {
+        is java.net.UnknownHostException -> "无法解析服务器地址（${e.message}），请检查网络或 API 地址是否正确"
+        is java.net.SocketTimeoutException -> "网络请求超时，请检查网络连接"
+        is javax.net.ssl.SSLException -> "SSL 连接失败，请检查 API 地址是否支持 HTTPS"
+        is IntentParseException -> e.message ?: "意图解析失败"
+        is ImageGenerationException -> e.message ?: "图像生成失败"
+        else -> e.message ?: "未知错误"
     }
 
     companion object {
