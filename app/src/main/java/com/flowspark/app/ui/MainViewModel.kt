@@ -65,6 +65,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _inputImageUri = MutableStateFlow<Uri?>(null)
     val inputImageUri: StateFlow<Uri?> = _inputImageUri.asStateFlow()
 
+    /** 是否显示配置界面 */
+    private val _showSettings = MutableStateFlow(false)
+    val showSettings: StateFlow<Boolean> = _showSettings.asStateFlow()
+
+    /** 当前 AI 供应商配置（可观察，供配置界面回显） */
+    private val _aiProviderConfig = MutableStateFlow(
+        AiProviderConfig(
+            baseUrl = BuildConfig.AI_PROXY_BASE_URL,
+            apiKey = BuildConfig.AI_PROXY_API_KEY,
+            llmModel = BuildConfig.DEFAULT_LLM_MODEL,
+            imageModel = BuildConfig.DEFAULT_IMAGE_MODEL,
+        )
+    )
+    val aiProviderConfig: StateFlow<AiProviderConfig> = _aiProviderConfig.asStateFlow()
+
     // ========== 对话操作 ==========
 
     fun updateInput(text: String) { _inputText.value = text }
@@ -177,8 +192,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     // ========== 供应商配置 ==========
 
+    /** 初始化时订阅 DataStore 中的配置 */
+    init {
+        viewModelScope.launch {
+            settings.aiProvider.collect { config ->
+                _aiProviderConfig.value = config
+            }
+        }
+    }
+
+    fun openSettings() { _showSettings.value = true }
+
+    fun closeSettings() { _showSettings.value = false }
+
     fun updateProviderConfig(config: AiProviderConfig) {
-        viewModelScope.launch { settings.updateProvider(config) }
+        viewModelScope.launch {
+            settings.updateProvider(config)
+            _aiProviderConfig.value = config
+        }
     }
 }
 
