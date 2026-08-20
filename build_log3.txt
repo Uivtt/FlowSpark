@@ -1,0 +1,361 @@
+﻿2026-08-20T00:48:25.6237303Z Current runner version: '2.336.0'
+2026-08-20T00:48:25.6258714Z ##[group]Runner Image Provisioner
+2026-08-20T00:48:25.6259476Z Hosted Compute Agent
+2026-08-20T00:48:25.6259971Z Version: 20260729.566
+2026-08-20T00:48:25.6260505Z Commit: cf7153fe6e25b664e8693c24944bf2b00355d109
+2026-08-20T00:48:25.6261181Z Build Date: 2026-07-29T19:17:02Z
+2026-08-20T00:48:25.6261757Z Worker ID: {9000e655-dcb3-41c2-a438-1e6191ec140d}
+2026-08-20T00:48:25.6262378Z Azure Region: mexicocentral
+2026-08-20T00:48:25.6262890Z ##[endgroup]
+2026-08-20T00:48:25.6263944Z ##[group]Operating System
+2026-08-20T00:48:25.6264529Z Ubuntu
+2026-08-20T00:48:25.6264964Z 24.04.4
+2026-08-20T00:48:25.6265367Z LTS
+2026-08-20T00:48:25.6265874Z ##[endgroup]
+2026-08-20T00:48:25.6266389Z ##[group]Runner Image
+2026-08-20T00:48:25.6266901Z Image: ubuntu-24.04
+2026-08-20T00:48:25.6267367Z Version: 20260816.277.1
+2026-08-20T00:48:25.6268684Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260816.277/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-20T00:48:25.6269945Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260816.277
+2026-08-20T00:48:25.6271065Z ##[endgroup]
+2026-08-20T00:48:25.6272018Z ##[group]GITHUB_TOKEN Permissions
+2026-08-20T00:48:25.6273839Z Contents: read
+2026-08-20T00:48:25.6274332Z Metadata: read
+2026-08-20T00:48:25.6274805Z Packages: read
+2026-08-20T00:48:25.6275323Z ##[endgroup]
+2026-08-20T00:48:25.6276958Z Secret source: Actions
+2026-08-20T00:48:25.6278023Z Prepare workflow directory
+2026-08-20T00:48:25.6542691Z Prepare all required actions
+2026-08-20T00:48:25.6583630Z Getting action download info
+2026-08-20T00:48:25.9604118Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-08-20T00:48:26.3219156Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-08-20T00:48:27.2059462Z Download action repository 'gradle/actions@v4' (SHA:ed408507eac070d1f99cc633dbcf757c94c7933a)
+2026-08-20T00:48:29.2691221Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-08-20T00:48:29.5607169Z Complete job name: build
+2026-08-20T00:48:29.6186882Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-20T00:48:29.6193224Z ##[group]Run actions/checkout@v4
+2026-08-20T00:48:29.6193590Z with:
+2026-08-20T00:48:29.6193808Z   repository: Uivtt/FlowSpark
+2026-08-20T00:48:29.6195844Z   token: ***
+2026-08-20T00:48:29.6196068Z   ssh-strict: true
+2026-08-20T00:48:29.6196281Z   ssh-user: git
+2026-08-20T00:48:29.6196502Z   persist-credentials: true
+2026-08-20T00:48:29.6196735Z   clean: true
+2026-08-20T00:48:29.6196952Z   sparse-checkout-cone-mode: true
+2026-08-20T00:48:29.6197208Z   fetch-depth: 1
+2026-08-20T00:48:29.6197627Z   fetch-tags: false
+2026-08-20T00:48:29.6197853Z   show-progress: true
+2026-08-20T00:48:29.6198066Z   lfs: false
+2026-08-20T00:48:29.6198305Z   submodules: false
+2026-08-20T00:48:29.6198522Z   set-safe-directory: true
+2026-08-20T00:48:29.6198773Z   allow-unsafe-pr-checkout: false
+2026-08-20T00:48:29.6199179Z ##[endgroup]
+2026-08-20T00:48:29.7159895Z Syncing repository: Uivtt/FlowSpark
+2026-08-20T00:48:29.7161718Z ##[group]Getting Git version info
+2026-08-20T00:48:29.7162298Z Working directory is '/home/runner/work/FlowSpark/FlowSpark'
+2026-08-20T00:48:29.7163209Z [command]/usr/bin/git version
+2026-08-20T00:48:29.7165237Z git version 2.55.0
+2026-08-20T00:48:29.7219884Z ##[endgroup]
+2026-08-20T00:48:29.7239658Z Temporarily overriding HOME='/home/runner/work/_temp/8ee31c37-d24d-4ecf-8d90-e0bf42f8d3cd' before making global git config changes
+2026-08-20T00:48:29.7241028Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-20T00:48:29.7246134Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/FlowSpark/FlowSpark
+2026-08-20T00:48:29.7306953Z Deleting the contents of '/home/runner/work/FlowSpark/FlowSpark'
+2026-08-20T00:48:29.7308957Z ##[group]Initializing the repository
+2026-08-20T00:48:29.7310066Z [command]/usr/bin/git init /home/runner/work/FlowSpark/FlowSpark
+2026-08-20T00:48:29.7411017Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-08-20T00:48:29.7411822Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-08-20T00:48:29.7412498Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-08-20T00:48:29.7413055Z hint: call:
+2026-08-20T00:48:29.7413351Z hint:
+2026-08-20T00:48:29.7413789Z hint: 	git config --global init.defaultBranch <name>
+2026-08-20T00:48:29.7414231Z hint:
+2026-08-20T00:48:29.7414597Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-08-20T00:48:29.7415044Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-08-20T00:48:29.7415409Z hint:
+2026-08-20T00:48:29.7415626Z hint: 	git branch -m <name>
+2026-08-20T00:48:29.7415875Z hint:
+2026-08-20T00:48:29.7416180Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-08-20T00:48:29.7417066Z Initialized empty Git repository in /home/runner/work/FlowSpark/FlowSpark/.git/
+2026-08-20T00:48:29.7438329Z [command]/usr/bin/git remote add origin https://github.com/Uivtt/FlowSpark
+2026-08-20T00:48:29.7467971Z ##[endgroup]
+2026-08-20T00:48:29.7468565Z ##[group]Disabling automatic garbage collection
+2026-08-20T00:48:29.7471696Z [command]/usr/bin/git config --local gc.auto 0
+2026-08-20T00:48:29.7500129Z ##[endgroup]
+2026-08-20T00:48:29.7500654Z ##[group]Setting up auth
+2026-08-20T00:48:29.7506327Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-20T00:48:29.7536063Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-20T00:48:29.7868074Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-20T00:48:29.7899885Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-20T00:48:29.8093181Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-20T00:48:29.8123221Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-20T00:48:29.8312726Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-08-20T00:48:29.8350770Z ##[endgroup]
+2026-08-20T00:48:29.8351404Z ##[group]Fetching the repository
+2026-08-20T00:48:29.8359852Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9e274eac183eddc0ff2c101acdf9b941806d3c0e:refs/remotes/origin/main
+2026-08-20T00:48:30.4323414Z From https://github.com/Uivtt/FlowSpark
+2026-08-20T00:48:30.4324110Z  * [new ref]         9e274eac183eddc0ff2c101acdf9b941806d3c0e -> origin/main
+2026-08-20T00:48:30.4328028Z ##[endgroup]
+2026-08-20T00:48:30.4328622Z ##[group]Determining the checkout info
+2026-08-20T00:48:30.4330887Z ##[endgroup]
+2026-08-20T00:48:30.4337706Z [command]/usr/bin/git sparse-checkout disable
+2026-08-20T00:48:30.4384584Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-08-20T00:48:30.4413410Z ##[group]Checking out the ref
+2026-08-20T00:48:30.4418731Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-08-20T00:48:30.4509234Z Switched to a new branch 'main'
+2026-08-20T00:48:30.4513664Z branch 'main' set up to track 'origin/main'.
+2026-08-20T00:48:30.4518710Z ##[endgroup]
+2026-08-20T00:48:30.4557824Z [command]/usr/bin/git log -1 --format=%H
+2026-08-20T00:48:30.4582258Z 9e274eac183eddc0ff2c101acdf9b941806d3c0e
+2026-08-20T00:48:30.4821514Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-20T00:48:30.4823207Z ##[group]Run actions/setup-java@v4
+2026-08-20T00:48:30.4823421Z with:
+2026-08-20T00:48:30.4823597Z   distribution: temurin
+2026-08-20T00:48:30.4823787Z   java-version: 17
+2026-08-20T00:48:30.4823961Z   java-package: jdk
+2026-08-20T00:48:30.4824133Z   check-latest: false
+2026-08-20T00:48:30.4824304Z   server-id: github
+2026-08-20T00:48:30.4824480Z   server-username: GITHUB_ACTOR
+2026-08-20T00:48:30.4824686Z   server-password: GITHUB_TOKEN
+2026-08-20T00:48:30.4824880Z   overwrite-settings: true
+2026-08-20T00:48:30.4825066Z   job-status: success
+2026-08-20T00:48:30.4827016Z   token: ***
+2026-08-20T00:48:30.4827193Z ##[endgroup]
+2026-08-20T00:48:30.6145766Z ##[warning]setup-java v4 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.
+2026-08-20T00:48:30.6152185Z ##[group]Installed distributions
+2026-08-20T00:48:30.6260576Z Resolved Java 17.0.20+8 from tool-cache
+2026-08-20T00:48:30.6260953Z Setting Java 17.0.20+8 as the default
+2026-08-20T00:48:30.6269076Z (node:1979) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-20T00:48:30.6269925Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-20T00:48:30.6271379Z Creating toolchains.xml for JDK version 17 from temurin
+2026-08-20T00:48:30.6325047Z Writing to /home/runner/.m2/toolchains.xml
+2026-08-20T00:48:30.6325488Z 
+2026-08-20T00:48:30.6325669Z Java configuration:
+2026-08-20T00:48:30.6326000Z   Distribution: temurin
+2026-08-20T00:48:30.6326334Z   Version: 17.0.20+8
+2026-08-20T00:48:30.6326780Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-8/x64
+2026-08-20T00:48:30.6327155Z 
+2026-08-20T00:48:30.6327707Z ##[endgroup]
+2026-08-20T00:48:30.6344306Z Creating settings.xml with server-id: github
+2026-08-20T00:48:30.6364386Z Writing to /home/runner/.m2/settings.xml
+2026-08-20T00:48:30.6635586Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-20T00:48:30.6636643Z ##[group]Run gradle/actions/setup-gradle@v4
+2026-08-20T00:48:30.6636873Z with:
+2026-08-20T00:48:30.6637041Z   cache-disabled: false
+2026-08-20T00:48:30.6637235Z   cache-read-only: false
+2026-08-20T00:48:30.6637639Z   cache-write-only: false
+2026-08-20T00:48:30.6637858Z   cache-overwrite-existing: false
+2026-08-20T00:48:30.6638099Z   cache-cleanup: on-success
+2026-08-20T00:48:30.6638446Z   gradle-home-cache-includes: caches
+notifications
+
+2026-08-20T00:48:30.6638925Z   add-job-summary: always
+2026-08-20T00:48:30.6639334Z   add-job-summary-as-pr-comment: never
+2026-08-20T00:48:30.6639603Z   dependency-graph: disabled
+2026-08-20T00:48:30.6639893Z   dependency-graph-report-dir: dependency-graph-reports
+2026-08-20T00:48:30.6640188Z   dependency-graph-continue-on-failure: true
+2026-08-20T00:48:30.6640432Z   build-scan-publish: false
+2026-08-20T00:48:30.6640630Z   validate-wrappers: true
+2026-08-20T00:48:30.6640829Z   allow-snapshot-wrappers: false
+2026-08-20T00:48:30.6641056Z   gradle-home-cache-strict-match: false
+2026-08-20T00:48:30.6641281Z   workflow-job-context: null
+2026-08-20T00:48:30.6643268Z   github-token: ***
+2026-08-20T00:48:30.6643446Z env:
+2026-08-20T00:48:30.6643690Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-8/x64
+2026-08-20T00:48:30.6644159Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-8/x64
+2026-08-20T00:48:30.6644641Z ##[endgroup]
+2026-08-20T00:48:32.4602731Z Merged default JDK locations into /home/runner/.m2/toolchains.xml
+2026-08-20T00:48:32.4603979Z Preparing cache for cleanup.
+2026-08-20T00:48:32.4606752Z ##[group]Restore Gradle state from cache
+2026-08-20T00:48:32.6943466Z Cache hit for restore-key: gradle-home-v1|Linux-X64|build[6bba7611642db1d720a7d7672e700108]-96bff18d5539be79f04d5f72a3b07cbd7d28df1c
+2026-08-20T00:48:33.9158943Z Received 108815 of 4303119 (2.5%), 0.1 MBs/sec
+2026-08-20T00:48:33.9422169Z Received 4303119 of 4303119 (100.0%), 4.0 MBs/sec
+2026-08-20T00:48:33.9426261Z Cache Size: ~4 MB (4303119 B)
+2026-08-20T00:48:33.9451018Z [command]/usr/bin/tar -xf /home/runner/work/_temp/c06e2ba5-c451-431f-8bd9-a6960bcc8726/cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --use-compress-program unzstd
+2026-08-20T00:48:34.0497827Z Cache restored successfully
+2026-08-20T00:48:34.0504090Z Restored cache entry with key gradle-home-v1|Linux-X64|build[6bba7611642db1d720a7d7672e700108]-9e274eac183eddc0ff2c101acdf9b941806d3c0e to /home/runner/.gradle/caches,/home/runner/.gradle/notifications,/home/runner/.gradle/.setup-gradle in 1589ms
+2026-08-20T00:48:34.2497773Z Cache hit for: gradle-groovy-dsl-v1-18bd325f1b495c1657d2cf12e908fbec
+2026-08-20T00:48:34.2529349Z Cache hit for: gradle-wrapper-zips-v1-ffeb4a2ba659779670a5133436ff6d73
+2026-08-20T00:48:34.2631257Z Cache hit for: gradle-instrumented-jars-v1-0d70221b113ace2a02e467f537af18f1
+2026-08-20T00:48:34.2635853Z Cache hit for: gradle-dependencies-v1-6e3c3c750edae6c80cdb517454ef1f86
+2026-08-20T00:48:34.2665932Z Cache hit for: gradle-generated-gradle-jars-v1-2745217bed79d67c9856a7ed393e27bf
+2026-08-20T00:48:34.2736405Z Cache hit for: gradle-kotlin-dsl-v1-06aba110c8c64af37e7dd11978417e29
+2026-08-20T00:48:34.2754939Z Cache hit for: gradle-transforms-v1-64d5cbeff691982827c539e43f82029c
+2026-08-20T00:48:34.7820146Z Received 226583 of 226583 (100.0%), 0.8 MBs/sec
+2026-08-20T00:48:34.7820663Z Cache Size: ~0 MB (226583 B)
+2026-08-20T00:48:34.7835967Z [command]/usr/bin/tar -xf /home/runner/work/_temp/33ed5ccf-9bef-423e-bbc4-2a0c4c09d7d5/cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --use-compress-program unzstd
+2026-08-20T00:48:34.8066337Z Received 122033 of 122033 (100.0%), 0.4 MBs/sec
+2026-08-20T00:48:34.8067316Z Cache Size: ~0 MB (122033 B)
+2026-08-20T00:48:34.8096826Z [command]/usr/bin/tar -xf /home/runner/work/_temp/cdb9b220-1db7-4588-b585-ad2eec9fe3f2/cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --use-compress-program unzstd
+2026-08-20T00:48:34.8289651Z Cache restored successfully
+2026-08-20T00:48:34.8291708Z Restored cache entry with key gradle-instrumented-jars-v1-0d70221b113ace2a02e467f537af18f1 to /home/runner/.gradle/caches/jars-*/*/ in 778ms
+2026-08-20T00:48:34.8524336Z Cache restored successfully
+2026-08-20T00:48:34.8526251Z Restored cache entry with key gradle-kotlin-dsl-v1-06aba110c8c64af37e7dd11978417e29 to /home/runner/.gradle/caches/*/kotlin-dsl/accessors/*/,/home/runner/.gradle/caches/*/kotlin-dsl/scripts/*/ in 801ms
+2026-08-20T00:48:34.8699401Z Received 191520 of 191520 (100.0%), 0.5 MBs/sec
+2026-08-20T00:48:34.8699871Z Cache Size: ~0 MB (191520 B)
+2026-08-20T00:48:34.8714501Z [command]/usr/bin/tar -xf /home/runner/work/_temp/8781dc25-4d99-4f72-8a9d-165b63bcee92/cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --use-compress-program unzstd
+2026-08-20T00:48:34.8898468Z Cache restored successfully
+2026-08-20T00:48:34.8899666Z Restored cache entry with key gradle-groovy-dsl-v1-18bd325f1b495c1657d2cf12e908fbec to /home/runner/.gradle/caches/*/groovy-dsl/*/ in 837ms
+2026-08-20T00:48:35.4683395Z Received 12582912 of 136012470 (9.3%), 12.0 MBs/sec
+2026-08-20T00:48:35.4914921Z Received 16777216 of 39709005 (42.3%), 16.0 MBs/sec
+2026-08-20T00:48:35.4980147Z Received 12582912 of 347746667 (3.6%), 12.0 MBs/sec
+2026-08-20T00:48:35.5050803Z Received 8388608 of 388445011 (2.2%), 8.0 MBs/sec
+2026-08-20T00:48:35.6436926Z Received 39709005 of 39709005 (100.0%), 32.8 MBs/sec
+2026-08-20T00:48:35.6439218Z Cache Size: ~38 MB (39709005 B)
+2026-08-20T00:48:35.6677185Z [command]/usr/bin/tar -xf /home/runner/work/_temp/850bae65-fb73-4b10-a3d2-9d260b746665/cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --use-compress-program unzstd
+2026-08-20T00:48:35.9428821Z Cache restored successfully
+2026-08-20T00:48:35.9483399Z Restored cache entry with key gradle-generated-gradle-jars-v1-2745217bed79d67c9856a7ed393e27bf to /home/runner/.gradle/caches/8.10.2/generated-gradle-jars/gradle-api-8.10.2.jar in 1897ms
+2026-08-20T00:48:36.4803630Z Received 130023424 of 136012470 (95.6%), 61.7 MBs/sec
+2026-08-20T00:48:36.5126444Z Received 134217728 of 347746667 (38.6%), 63.5 MBs/sec
+2026-08-20T00:48:36.5127003Z Received 134217728 of 388445011 (34.6%), 63.8 MBs/sec
+2026-08-20T00:48:36.5912461Z Received 136012470 of 136012470 (100.0%), 61.1 MBs/sec
+2026-08-20T00:48:36.5915514Z Cache Size: ~130 MB (136012470 B)
+2026-08-20T00:48:36.6153997Z [command]/usr/bin/tar -xf /home/runner/work/_temp/9bf45f59-87bf-4e48-bf89-0e842a2c3aba/cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --use-compress-program unzstd
+2026-08-20T00:48:36.8406141Z Cache restored successfully
+2026-08-20T00:48:36.8468115Z Restored cache entry with key gradle-wrapper-zips-v1-ffeb4a2ba659779670a5133436ff6d73 to /home/runner/.gradle/wrapper/dists/gradle-8.10.2-bin/a04bxjujx95o3nb99gddekhwo in 2795ms
+2026-08-20T00:48:37.5126953Z Received 293601280 of 347746667 (84.4%), 92.8 MBs/sec
+2026-08-20T00:48:37.5127846Z Received 268435456 of 388445011 (69.1%), 85.1 MBs/sec
+2026-08-20T00:48:37.8687147Z Received 347746667 of 347746667 (100.0%), 98.3 MBs/sec
+2026-08-20T00:48:37.8689138Z Cache Size: ~332 MB (347746667 B)
+2026-08-20T00:48:37.8858795Z [command]/usr/bin/tar -xf /home/runner/work/_temp/b865019d-c2c2-4c25-a137-75e8d6d3bda4/cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --use-compress-program unzstd
+2026-08-20T00:48:38.0711640Z Received 388445011 of 388445011 (100.0%), 103.9 MBs/sec
+2026-08-20T00:48:38.0712494Z Cache Size: ~370 MB (388445011 B)
+2026-08-20T00:48:38.0746557Z [command]/usr/bin/tar -xf /home/runner/work/_temp/2ea9ede2-eefc-4be1-ba4c-f9269d413965/cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --use-compress-program unzstd
+2026-08-20T00:48:39.1746867Z Cache restored successfully
+2026-08-20T00:48:39.3849206Z Restored cache entry with key gradle-dependencies-v1-6e3c3c750edae6c80cdb517454ef1f86 to /home/runner/.gradle/caches/modules-*/files-*/*/*/*/* in 5333ms
+2026-08-20T00:48:42.6244531Z Cache restored successfully
+2026-08-20T00:48:42.6378721Z Restored cache entry with key gradle-transforms-v1-64d5cbeff691982827c539e43f82029c to /home/runner/.gradle/caches/transforms-4/*/,/home/runner/.gradle/caches/*/transforms/*/ in 8585ms
+2026-08-20T00:48:42.6466588Z ##[endgroup]
+2026-08-20T00:48:42.6522582Z ##[group]All Gradle Wrapper jars are valid
+2026-08-20T00:48:42.6523443Z ✓ Found known Gradle Wrapper JAR files:
+2026-08-20T00:48:42.6523919Z   2db75c40782f5e8ba1fc278a5574bab070adccb2d21ca5a6e5ed840888448046 gradle/wrapper/gradle-wrapper.jar
+2026-08-20T00:48:42.6524636Z ##[endgroup]
+2026-08-20T00:48:42.7618056Z ##[group]Run chmod +x gradlew
+2026-08-20T00:48:42.7618405Z [36;1mchmod +x gradlew[0m
+2026-08-20T00:48:42.7654398Z shell: /usr/bin/bash -e {0}
+2026-08-20T00:48:42.7654668Z env:
+2026-08-20T00:48:42.7654974Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-8/x64
+2026-08-20T00:48:42.7655427Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-8/x64
+2026-08-20T00:48:42.7655814Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+2026-08-20T00:48:42.7656119Z   GRADLE_USER_HOME: /home/runner/.gradle
+2026-08-20T00:48:42.7656405Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+2026-08-20T00:48:42.7656695Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+2026-08-20T00:48:42.7657104Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+2026-08-20T00:48:42.7657734Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+2026-08-20T00:48:42.7658038Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+2026-08-20T00:48:42.7658490Z ##[endgroup]
+2026-08-20T00:48:42.7969353Z ##[group]Run ./gradlew :app:assembleDebug --no-daemon
+2026-08-20T00:48:42.7969733Z [36;1m./gradlew :app:assembleDebug --no-daemon[0m
+2026-08-20T00:48:42.8000022Z shell: /usr/bin/bash -e {0}
+2026-08-20T00:48:42.8000274Z env:
+2026-08-20T00:48:42.8000567Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-8/x64
+2026-08-20T00:48:42.8001011Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-8/x64
+2026-08-20T00:48:42.8001405Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+2026-08-20T00:48:42.8001708Z   GRADLE_USER_HOME: /home/runner/.gradle
+2026-08-20T00:48:42.8001991Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+2026-08-20T00:48:42.8002281Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+2026-08-20T00:48:42.8002673Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+2026-08-20T00:48:42.8003096Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+2026-08-20T00:48:42.8003398Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+2026-08-20T00:48:42.8003699Z ##[endgroup]
+2026-08-20T00:48:44.5780647Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-08-20T00:48:45.8769988Z Daemon will be stopped at the end of the build 
+2026-08-20T00:48:56.7782025Z > Task :app:preBuild UP-TO-DATE
+2026-08-20T00:48:56.7782642Z > Task :app:preDebugBuild UP-TO-DATE
+2026-08-20T00:48:56.7785287Z > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+2026-08-20T00:48:56.7798179Z > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-08-20T00:48:56.8779070Z > Task :app:generateDebugBuildConfig
+2026-08-20T00:48:57.2783961Z > Task :app:generateDebugResValues
+2026-08-20T00:48:57.3769209Z > Task :app:checkDebugAarMetadata
+2026-08-20T00:48:57.3769774Z > Task :app:mapDebugSourceSetPaths
+2026-08-20T00:48:57.3773586Z > Task :app:generateDebugResources
+2026-08-20T00:48:58.1769896Z > Task :app:packageDebugResources
+2026-08-20T00:48:58.6770154Z > Task :app:mergeDebugResources
+2026-08-20T00:48:59.1781657Z > Task :app:createDebugCompatibleScreenManifests
+2026-08-20T00:48:59.1792851Z > Task :app:extractDeepLinksDebug
+2026-08-20T00:48:59.2805444Z > Task :app:parseDebugLocalResources
+2026-08-20T00:48:59.3773572Z 
+2026-08-20T00:48:59.3798658Z > Task :app:processDebugMainManifest
+2026-08-20T00:48:59.3816593Z /home/runner/work/FlowSpark/FlowSpark/app/src/main/AndroidManifest.xml Warning:
+2026-08-20T00:48:59.3818273Z 	provider#org.acra.attachment.AcraContentProvider@android:authorities was tagged at AndroidManifest.xml:0 to replace other declarations but no other declaration present
+2026-08-20T00:48:59.4771305Z 
+2026-08-20T00:48:59.4779052Z > Task :app:processDebugManifest
+2026-08-20T00:48:59.4780148Z > Task :app:processDebugManifestForPackage
+2026-08-20T00:48:59.4781072Z > Task :app:javaPreCompileDebug
+2026-08-20T00:48:59.6779341Z > Task :app:mergeDebugShaders
+2026-08-20T00:48:59.6801704Z > Task :app:compileDebugShaders NO-SOURCE
+2026-08-20T00:48:59.6802736Z > Task :app:generateDebugAssets UP-TO-DATE
+2026-08-20T00:48:59.7784203Z > Task :app:mergeDebugAssets
+2026-08-20T00:48:59.7799618Z > Task :app:compressDebugAssets
+2026-08-20T00:48:59.7818127Z > Task :app:desugarDebugFileDependencies
+2026-08-20T00:48:59.9770610Z > Task :app:processDebugResources
+2026-08-20T00:49:00.1769901Z > Task :app:checkDebugDuplicateClasses
+2026-08-20T00:49:01.5773897Z > Task :app:mergeDebugJniLibFolders
+2026-08-20T00:49:01.5858552Z > Task :app:mergeLibDexDebug
+2026-08-20T00:49:01.7769925Z > Task :app:mergeDebugNativeLibs
+2026-08-20T00:49:04.0868634Z > Task :app:validateSigningDebug
+2026-08-20T00:49:04.0898180Z > Task :app:writeDebugAppMetadata
+2026-08-20T00:49:04.1818606Z > Task :app:writeDebugSigningConfigVersions
+2026-08-20T00:49:04.2837819Z 
+2026-08-20T00:49:04.2838748Z > Task :app:stripDebugDebugSymbols
+2026-08-20T00:49:04.2899491Z Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so.
+2026-08-20T00:49:10.0798280Z 
+2026-08-20T00:49:10.0808144Z > Task :app:kspDebugKotlin
+2026-08-20T00:49:15.0771639Z > Task :app:mergeExtDexDebug
+2026-08-20T00:49:18.0779283Z e: file:///home/runner/work/FlowSpark/FlowSpark/app/src/main/java/com/flowspark/app/FlowSparkApplication.kt:33:21 Unresolved reference 'format'.
+2026-08-20T00:49:18.0780230Z 
+2026-08-20T00:49:18.0780431Z FAILURE: Build failed with an exception.
+2026-08-20T00:49:18.0780738Z 
+2026-08-20T00:49:18.0780882Z * What went wrong:
+2026-08-20T00:49:18.0781297Z Execution failed for task ':app:compileDebugKotlin'.
+2026-08-20T00:49:18.0782381Z > A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+2026-08-20T00:49:18.0783430Z    > Compilation error. See log for more details
+2026-08-20T00:49:18.0783744Z 
+2026-08-20T00:49:18.0783873Z * Try:
+2026-08-20T00:49:18.0784253Z > Run with --stacktrace option to get the stack trace.
+2026-08-20T00:49:18.0784873Z > Run with --info or --debug option to get more log output.
+2026-08-20T00:49:18.0785389Z > Run with --scan to get full insights.
+2026-08-20T00:49:18.0785862Z > Get more help at https://help.gradle.org.
+2026-08-20T00:49:18.0786169Z 
+2026-08-20T00:49:18.0786312Z BUILD FAILED in 35s
+2026-08-20T00:49:18.0786525Z 
+2026-08-20T00:49:18.0790070Z > Task :app:compileDebugKotlin FAILED
+2026-08-20T00:49:18.0790878Z gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1787186928688.json
+2026-08-20T00:49:18.0791627Z 30 actionable tasks: 30 executed
+2026-08-20T00:49:18.5562859Z ##[error]Process completed with exit code 1.
+2026-08-20T00:49:18.5732056Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-20T00:49:18.5733039Z Post job cleanup.
+2026-08-20T00:49:18.7688499Z In post-action step
+2026-08-20T00:49:18.7697791Z ##[group]Stopping Gradle daemons
+2026-08-20T00:49:18.7698642Z Stopping Gradle daemons for /home/runner/.gradle/wrapper/dists/gradle-8.10.2-bin/a04bxjujx95o3nb99gddekhwo/gradle-8.10.2
+2026-08-20T00:49:18.7710643Z [command]/home/runner/.gradle/wrapper/dists/gradle-8.10.2-bin/a04bxjujx95o3nb99gddekhwo/gradle-8.10.2/bin/gradle --stop
+2026-08-20T00:49:19.3132685Z No Gradle daemons are running.
+2026-08-20T00:49:19.3219253Z ##[endgroup]
+2026-08-20T00:49:19.3220281Z Not performing cache-cleanup due to build failure
+2026-08-20T00:49:19.3221155Z ##[group]Caching Gradle state
+2026-08-20T00:49:21.1016335Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/FlowSpark/FlowSpark --files-from manifest.txt --use-compress-program zstdmt
+2026-08-20T00:49:22.1191005Z Sent 4393371 of 4393371 (100.0%), 6.0 MBs/sec
+2026-08-20T00:49:22.3692374Z Saved cache entry with key gradle-home-v1|Linux-X64|build[6bba7611642db1d720a7d7672e700108]-9e274eac183eddc0ff2c101acdf9b941806d3c0e from /home/runner/.gradle/caches,/home/runner/.gradle/notifications,/home/runner/.gradle/.setup-gradle in 1281ms
+2026-08-20T00:49:22.3694011Z ##[endgroup]
+2026-08-20T00:49:22.3696933Z Generating Job Summary
+2026-08-20T00:49:22.3706389Z Completed post-action step
+2026-08-20T00:49:22.3883684Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-20T00:49:22.3884692Z Post job cleanup.
+2026-08-20T00:49:22.4944802Z (node:2368) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-20T00:49:22.4945484Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-20T00:49:22.5106388Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-20T00:49:22.5107728Z Post job cleanup.
+2026-08-20T00:49:22.5837651Z [command]/usr/bin/git version
+2026-08-20T00:49:22.5871358Z git version 2.55.0
+2026-08-20T00:49:22.5902721Z Temporarily overriding HOME='/home/runner/work/_temp/6e20bdb5-085b-4041-9597-8ef810455b80' before making global git config changes
+2026-08-20T00:49:22.5903873Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-20T00:49:22.5906088Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/FlowSpark/FlowSpark
+2026-08-20T00:49:22.5937331Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-20T00:49:22.5966299Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-20T00:49:22.6174262Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-20T00:49:22.6199093Z http.https://github.com/.extraheader
+2026-08-20T00:49:22.6208181Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-08-20T00:49:22.6237789Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-20T00:49:22.6478965Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-20T00:49:22.6517317Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-20T00:49:22.6839538Z Cleaning up orphan processes
+2026-08-20T00:49:22.7092645Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-java@v4, gradle/actions/setup-gradle@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

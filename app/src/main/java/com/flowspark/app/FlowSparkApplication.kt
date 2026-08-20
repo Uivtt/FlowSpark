@@ -4,8 +4,8 @@ import android.app.Application
 import com.flowspark.app.data.local.FlowSparkDatabase
 import org.acra.config.dialog
 import org.acra.config.httpSender
-import org.acra.data.StringFormat
 import org.acra.ktx.initAcra
+import org.acra.sender.HttpSender
 
 class FlowSparkApplication : Application() {
     lateinit var database: FlowSparkDatabase
@@ -30,7 +30,7 @@ class FlowSparkApplication : Application() {
                     } else {
                         "https://flowspark-crash.example.com/report"
                     }
-                    format = StringFormat.JSON
+                    format = HttpSender.Type.JSON
                 }
             }
         }
