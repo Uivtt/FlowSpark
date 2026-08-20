@@ -30,11 +30,23 @@ class IntentParser(private val aiClient: AiClient) {
     }
 
     suspend fun parse(userInput: String): Result<ParsedWorkflow> {
-        // 首次尝试
+        // 首次尝试调用云端 AI
         val first = aiClient.parseIntent(userInput, SYSTEM_PROMPT)
         if (first.isSuccess) return first
 
         val error = first.exceptionOrNull()
+
+        // 网络错误时降级到离线关键词解析器
+        if (error is java.net.UnknownHostException || error is java.net.SocketTimeoutException) {
+            val offline = OfflineFallbackParser.tryParse(userInput)
+            if (offline != null) {
+                return Result.success(offline)
+            }
+            return Result.failure(
+                IntentParseException("网络不可用，且离线模式无法理解您的需求。请检查网络后重试。")
+            )
+        }
+
         // 只有 JSON 解析类错误才值得重试（网络上/解析器把错误喂回 LLM 没有意义，还浪费 token）
         if (error !is IntentParseException) return first
 

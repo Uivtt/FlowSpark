@@ -19,30 +19,47 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import com.flowspark.app.ui.MainViewModel
 import com.flowspark.app.ui.screens.HomeScreen
+import com.flowspark.app.ui.screens.OnboardingScreen
 import com.flowspark.app.ui.screens.SettingsScreen
 import com.flowspark.app.ui.theme.FlowSparkTheme
 
 class MainActivity : ComponentActivity() {
 
+    // 单张图片选择
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { viewModel.setInputImage(it) }
     }
 
+    // 批量图片选择（Android 4.4+ 多选）
+    private val pickBatchImagesLauncher = registerForActivityResult(
+        ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            viewModel.setBatchImages(uris)
+        }
+    }
+
+    // 导入工作流文件
+    private val importWorkflowLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.importWorkflow(it) }
+    }
+
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { /* 用户选择后无需额外操作 */ }
+    ) { }
 
     private lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // targetSdk 35 默认启用 edge-to-edge,让 Compose Scaffold 接管 inset 管理
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        // Android 13+ 请求通知权限(前台服务需要通知显示,否则用户看不到执行进度)
+        // Android 13+ 通知权限
         if (Build.VERSION.SDK_INT >= 33) {
             if (ContextCompat.checkSelfPermission(
                     this, android.Manifest.permission.POST_NOTIFICATIONS
@@ -55,6 +72,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             viewModel = viewModel()
             val showSettings by viewModel.showSettings.collectAsState()
+            val showOnboarding by viewModel.showOnboarding.collectAsState()
             val aiProviderConfig by viewModel.aiProviderConfig.collectAsState()
 
             FlowSparkTheme {
@@ -62,23 +80,34 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    if (showSettings) {
-                        // 配置界面
-                        SettingsScreen(
-                            currentConfig = aiProviderConfig,
-                            onSave = { config ->
-                                viewModel.updateProviderConfig(config)
-                                viewModel.closeSettings()
-                            },
-                            onBack = { viewModel.closeSettings() },
-                        )
-                    } else {
-                        // 主界面
-                        HomeScreen(
-                            viewModel = viewModel,
-                            onPickImage = { pickImageLauncher.launch("image/*") },
-                            onOpenSettings = { viewModel.openSettings() },
-                        )
+                    when {
+                        showOnboarding -> {
+                            // 新手引导
+                            OnboardingScreen(
+                                onComplete = { viewModel.completeOnboarding() },
+                            )
+                        }
+                        showSettings -> {
+                            // 配置界面
+                            SettingsScreen(
+                                currentConfig = aiProviderConfig,
+                                onSave = { config ->
+                                    viewModel.updateProviderConfig(config)
+                                    viewModel.closeSettings()
+                                },
+                                onBack = { viewModel.closeSettings() },
+                            )
+                        }
+                        else -> {
+                            // 主界面
+                            HomeScreen(
+                                viewModel = viewModel,
+                                onPickImage = { pickImageLauncher.launch("image/*") },
+                                onPickBatchImages = { pickBatchImagesLauncher.launch("image/*") },
+                                onImportWorkflow = { importWorkflowLauncher.launch("application/json") },
+                                onOpenSettings = { viewModel.openSettings() },
+                            )
+                        }
                     }
                 }
             }

@@ -71,6 +71,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _inputImageUri = MutableStateFlow<Uri?>(null)
     val inputImageUri: StateFlow<Uri?> = _inputImageUri.asStateFlow()
 
+    /** 当前待确认工作流的预估费用 */
+    private val _estimatedCost = MutableStateFlow("")
+    val estimatedCost: StateFlow<String> = _estimatedCost.asStateFlow()
+
+    /** 是否首次启动（显示新手引导） */
+    private val _showOnboarding = MutableStateFlow(false)
+    val showOnboarding: StateFlow<Boolean> = _showOnboarding.asStateFlow()
+
+    /** 批量处理图片 Uri 列表 */
+    private val _batchUris = MutableStateFlow<List<android.net.Uri>>(emptyList())
+    val batchUris: StateFlow<List<android.net.Uri>> = _batchUris.asStateFlow()
+
+    /** 批量处理进度 (current, total) */
+    private val _batchProgress = MutableStateFlow<Pair<Int, Int>?>(null)
+    val batchProgress: StateFlow<Pair<Int, Int>?> = _batchProgress.asStateFlow()
+
     /** 是否显示配置界面 */
     private val _showSettings = MutableStateFlow(false)
     val showSettings: StateFlow<Boolean> = _showSettings.asStateFlow()
@@ -130,6 +146,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val result = parser.parse(text)
                 result.onSuccess { workflow ->
                     _pendingWorkflow.value = workflow
+                    // 计算预估费用
+                    val cost = com.flowspark.app.util.CostEstimator.estimate(workflow.steps)
+                    _estimatedCost.value = cost.formattedShort
                     _messages.value = _messages.value + ChatMessage.assistant(
                         workflow.summary,
                         workflow,
@@ -176,6 +195,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /** 取消待处理工作流 */
     fun cancelWorkflow() {
         _pendingWorkflow.value = null
+        _estimatedCost.value = ""
     }
 
     private fun executeLocal(steps: List<Step>) {
@@ -243,6 +263,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _aiProviderConfig.value = config
             }
         }
+        // 检查是否首次启动
+        viewModelScope.launch {
+            val prefs = getApplication<com.flowspark.app.FlowSparkApplication>()
+                .getSharedPreferences("flowspark_onboarding", android.content.Context.MODE_PRIVATE)
+            if (!prefs.getBoolean("onboarding_done", false)) {
+                _showOnboarding.value = true
+            }
+        }
 
         val app = getApplication<com.flowspark.app.FlowSparkApplication>()
         val flags = if (Build.VERSION.SDK_INT >= 33) ContextCompat.RECEIVER_NOT_EXPORTED else 0
@@ -268,6 +296,123 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             settings.updateProvider(config)
             _aiProviderConfig.value = config
         }
+    }
+
+    // ========== 新手引导 ==========
+
+    fun completeOnboarding() {
+        _showOnboarding.value = false
+        val prefs = getApplication<com.flowspark.app.FlowSparkApplication>()
+            .getSharedPreferences("flowspark_onboarding", android.content.Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("onboarding_done", true).apply()
+    }
+
+    // ========== 工作流导入/导出 ==========
+
+    fun exportWorkflow() {
+        val workflow = _pendingWorkflow.value ?: return
+        val json = com.flowspark.app.util.WorkflowSerializer.serialize(
+            name = workflow.summary,
+            steps = workflow.steps,
+        )
+        val context = getApplication<com.flowspark.app.FlowSparkApplication>()
+        val file = java.io.File(context.cacheDir, "workflow_${System.currentTimeMillis()}.flow.json")
+        file.writeText(json)
+        // 通过 FileProvider 分享
+        val uri = androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file,
+        )
+        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = "application/json"
+            putExtra(android.content.Intent.EXTRA_STREAM, uri)
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(android.content.Intent.createChooser(shareIntent, "分享工作流"))
+    }
+
+    /** 分享当前结果图片到社交媒体 */
+    fun shareImage() {
+        val uri = _previewUri.value ?: return
+        val context = getApplication<com.flowspark.app.FlowSparkApplication>()
+        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = "image/*"
+            putExtra(android.content.Intent.EXTRA_STREAM, uri)
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(android.content.Intent.createChooser(shareIntent, "分享图片"))
+    }
+
+    fun importWorkflow(uri: android.net.Uri) {
+        viewModelScope.launch {
+            try {
+                val context = getApplication<com.flowspark.app.FlowSparkApplication>()
+                val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText()
+                    ?: return@launch
+                val doc = com.flowspark.app.util.WorkflowSerializer.deserialize(json)
+                doc.onSuccess { document ->
+                    val workflow = com.flowspark.app.domain.model.ParsedWorkflow(
+                        steps = document.steps,
+                        summary = "导入: ${document.name}",
+                    )
+                    _pendingWorkflow.value = workflow
+                    val cost = com.flowspark.app.util.CostEstimator.estimate(document.steps)
+                    _estimatedCost.value = cost.formattedShort
+                    _messages.value = _messages.value + com.flowspark.app.ui.ChatMessage.system("📥 已导入工作流「${document.name}」")
+                }.onFailure { error ->
+                    _messages.value = _messages.value + com.flowspark.app.ui.ChatMessage.system("❌ 导入失败: ${error.message}")
+                }
+            } catch (e: Exception) {
+                _messages.value = _messages.value + com.flowspark.app.ui.ChatMessage.system("❌ 导入失败: ${e.message}")
+            }
+        }
+    }
+
+    // ========== 批量处理 ==========
+
+    fun setBatchImages(uris: List<android.net.Uri>) {
+        _batchUris.value = uris
+        _inputImageUri.value = uris.firstOrNull()
+        _previewUri.value = uris.firstOrNull()
+        _messages.value = _messages.value + com.flowspark.app.ui.ChatMessage.system("📷 已选择 ${uris.size} 张图片")
+    }
+
+    fun executeBatch() {
+        val workflow = _pendingWorkflow.value ?: return
+        val uris = _batchUris.value
+        if (uris.isEmpty()) return
+        _pendingWorkflow.value = null
+
+        viewModelScope.launch {
+            _batchProgress.value = Pair(0, uris.size)
+            for ((index, uri) in uris.withIndex()) {
+                _batchProgress.value = Pair(index, uris.size)
+                _inputImageUri.value = uri
+                _previewUri.value = uri
+                _messages.value = _messages.value + com.flowspark.app.ui.ChatMessage.system("📸 处理第 ${index + 1}/${uris.size} 张...")
+                // 对每张图片执行工作流（纯本地步骤）
+                if (workflow.steps.all { !it.type.isCloud }) {
+                    executeLocal(workflow.steps)
+                } else {
+                    _messages.value = _messages.value + com.flowspark.app.ui.ChatMessage.system("⚠️ 批量处理暂不支持云端步骤")
+                    break
+                }
+            }
+            _batchProgress.value = null
+            _messages.value = _messages.value + com.flowspark.app.ui.ChatMessage.system("✅ 批量处理完成")
+        }
+    }
+
+    // ========== 步骤重排 ==========
+
+    fun reorderSteps(fromIndex: Int, toIndex: Int) {
+        val workflow = _pendingWorkflow.value ?: return
+        val steps = workflow.steps.toMutableList()
+        if (fromIndex < 0 || fromIndex >= steps.size || toIndex < 0 || toIndex >= steps.size) return
+        val item = steps.removeAt(fromIndex)
+        steps.add(toIndex, item)
+        _pendingWorkflow.value = workflow.copy(steps = steps)
     }
 }
 

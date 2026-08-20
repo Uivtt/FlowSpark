@@ -26,6 +26,7 @@ android {
         buildConfigField("String", "AI_PROXY_API_KEY", "\"demo-key-please-configure\"")
         buildConfigField("String", "DEFAULT_LLM_MODEL", "\"deepseek-chat\"")
         buildConfigField("String", "DEFAULT_IMAGE_MODEL", "\"black-forest-labs/FLUX.1-schnell\"")
+        buildConfigField("String", "ACRA_URI", "\"\"")
     }
 
     buildTypes {
@@ -103,6 +104,13 @@ dependencies {
 
     // Image loading
     implementation(libs.coil.compose)
+
+    // ACRA crash reporting (lightweight Crashlytics 替代)
+    implementation(libs.acra.http)
+    implementation(libs.acra.dialog)
+    // WindowSizeClass (大屏适配)
+    implementation(libs.androidx.window)
+    implementation(libs.androidx.window.core)
 
     // Testing
     testImplementation(libs.junit)
