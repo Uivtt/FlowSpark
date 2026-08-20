@@ -25,7 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.flowspark.app.ui.theme.Indigo500
 
-/** 新手引导页面（三步骤演示） */
 @Composable
 fun OnboardingScreen(
     onComplete: () -> Unit,
@@ -33,32 +32,28 @@ fun OnboardingScreen(
 ) {
     var step by remember { mutableStateOf(0) }
     val steps = listOf(
-        OnboardingStep(
-            "👋 欢迎使用 FlowSpark",
+        StepData(
+            "👋",
+            "欢迎使用 FlowSpark",
             "零门槛对话式 AI 视觉工作流工具\n\n说句话就能编辑图片，就像聊天一样简单。",
             "开始体验",
         ),
-        OnboardingStep(
-            "💬 第一步：说话",
-            "在底部输入框说出你想做的事，例如：\n\n" +
-                "「调亮一点，然后弄成黑白」\n" +
-                "「把背景变模糊」\n" +
-                "「画一只猫在草地上」",
+        StepData(
+            "💬",
+            "第一步：说话",
+            "在底部输入框说出你想做的事，例如：\n\n「调亮一点，然后弄成黑白」\n「把背景变模糊」\n「画一只猫在草地上」",
             "下一步",
         ),
-        OnboardingStep(
-            "✅ 第二步：确认",
-            "AI 会理解你的需求并生成工作流卡片。\n" +
-                "确认无误后点击「确认执行」。\n\n" +
-                "🔹 蓝色 = 云端处理（需网络）\n" +
-                "📱 灰色 = 本地处理（无需网络）",
+        StepData(
+            "✅",
+            "第二步：确认",
+            "AI 会理解你的需求并生成工作流卡片。\n确认无误后点击「确认执行」。\n\n🔹 蓝色 = 云端处理（需网络）\n📱 灰色 = 本地处理（无需网络）",
             "下一步",
         ),
-        OnboardingStep(
-            "🎉 第三步：出图",
-            "执行完成后图片自动显示在预览区。\n\n" +
-                "你可以继续对话调整，或点击 ⚙️ 切换 AI 供应商。\n\n" +
-                "现在开始试试吧！",
+        StepData(
+            "🎉",
+            "第三步：出图",
+            "执行完成后图片自动显示在预览区。\n\n你可以继续对话调整，或点击 ⚙️ 切换 AI 供应商。\n\n现在开始试试吧！",
             "开始使用",
         ),
     )
@@ -96,15 +91,12 @@ fun OnboardingScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(48.dp))
-
-            // 步骤指示器
             Text(
                 text = "${step + 1} / ${steps.size}",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(16.dp))
-
             Button(
                 onClick = {
                     if (step < steps.size - 1) step++
@@ -125,7 +117,7 @@ fun OnboardingScreen(
     }
 }
 
-private data class OnboardingStep(
+private data class StepData(
     val emoji: String,
     val title: String,
     val body: String,
