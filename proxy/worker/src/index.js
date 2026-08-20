@@ -1,14 +1,16 @@
 /**
  * FlowSpark AI 代理层 (Cloudflare Workers)
  *
- * 职责（v2.1 计划书 2.1 节）：
- *  1. API Key 保护：供应商 Key 只存在 Worker 环境变量，App 永远拿不到
- *  2. 供应商路由：/v1/chat/completions → DeepSeek/Groq/OpenAI
+ * 职责(v2.1 计划书 2.1 节):
+ *  1. API Key 保护:供应商 Key 只存在 Worker 环境变量,App 永远拿不到
+ *  2. 供应商路由:/v1/chat/completions → DeepSeek/Groq/OpenAI
  *                   /v1/images/generations → Together AI (Flux) / OpenAI
- *  3. 每日限额：全局 + 按用户维度硬顶
- *  4. 供应商熔断：连续 3 次 5xx 自动切换备用
+ *                   /v1/images/edits       → OpenAI (gpt-image-1 图生图, multipart)
+ *  3. 每日限额:全局 + 按用户维度硬顶
+ *  4. 供应商熔断:连续 3 次 5xx 自动切换备用
  *
- * 对外暴露 OpenAI-Compatible 协议，App 端 [OpenAiCompatibleClient] 零感知。
+ * 对外暴露 OpenAI-Compatible 协议,App 端 [OpenAiCompatibleClient] 零感知。
+ * 非 JSON 请求(图生图 multipart)原样透传,不做模型名替换、不重写 Content-Type。
  */
 
 // ============ 供应商路由配置 ============
@@ -24,7 +26,7 @@ const PROVIDERS = {
   ],
 };
 
-// 供应商熔断状态（内存态，每个隔离区独立；生产可换 KV 持久化）
+// 供应商熔断状态(内存态,每个隔离区独立;生产可换 KV 持久化)
 const circuitBreakers = new Map(); // key: `${kind}:${name}` -> { failures, openedUntil }
 
 function breakerKey(kind, name) { return `${kind}:${name}`; }
@@ -49,10 +51,10 @@ function recordSuccess(kind, name) {
   circuitBreakers.delete(breakerKey(kind, name));
 }
 
-// ============ 限额控制（KV 持久化） ============
+// ============ 限额控制(KV 持久化) ============
 
 async function checkQuota(env, userId) {
-  if (!env.QUOTA_KV) return { allowed: true }; // 未配置 KV 时放行（开发模式）
+  if (!env.QUOTA_KV) return { allowed: true }; // 未配置 KV 时放行(开发模式)
 
   const dateKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const globalKey = `quota:global:${dateKey}`;
@@ -87,23 +89,29 @@ async function forwardRequest(provider, request, env) {
   const upstream = new URL(request.url);
   upstream.host = new URL(provider.base).host;
 
-  // 替换模型名（如果 App 请求的是默认模型名，则映射到供应商实际模型）
-  const body = await request.clone().text();
-  let parsedBody = null;
-  try { parsedBody = JSON.parse(body); } catch (_) { /* 非 JSON 透传 */ }
-
-  if (parsedBody && parsedBody.model) {
-    parsedBody.model = provider.model;
-  }
-
   const headers = new Headers(request.headers);
   headers.set("Authorization", `Bearer ${provider.key(env)}`);
-  headers.set("Content-Type", "application/json");
+
+  // 仅对 application/json 做模型名替换;multipart(图生图)等非 JSON 请求原样透传。
+  // 原因:request.text() 会把二进制图片数据按 UTF-8 解码再编码,损坏 multipart 内容;
+  //       且强制改写 Content-Type 会丢失 multipart 的 boundary。
+  let body = request.body;
+  const contentType = headers.get("Content-Type") || "";
+  if (contentType.includes("application/json")) {
+    const text = await request.clone().text();
+    let parsedBody = null;
+    try { parsedBody = JSON.parse(text); } catch (_) { /* 解析失败按原文透传 */ }
+    if (parsedBody && parsedBody.model) {
+      parsedBody.model = provider.model;
+    }
+    body = parsedBody ? JSON.stringify(parsedBody) : text;
+    headers.set("Content-Type", "application/json");
+  }
 
   return fetch(new Request(upstream.toString(), {
     method: request.method,
     headers,
-    body: parsedBody ? JSON.stringify(parsedBody) : body,
+    body,
   }));
 }
 
@@ -114,7 +122,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // CORS（App 原生请求不需要，但 Web 调试方便）
+    // CORS(App 原生请求不需要,但 Web 调试方便)
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -124,7 +132,7 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    // 简单鉴权：App 持有的代理 Key（可选，推荐开启）
+    // 简单鉴权:App 持有的代理 Key(可选,推荐开启)
     const proxyKey = env.PROXY_API_KEY;
     if (proxyKey) {
       const auth = request.headers.get("Authorization") || "";
@@ -135,13 +143,13 @@ export default {
       }
     }
 
-    // 用户标识（生产应换成签名校验后的用户 ID；demo 用 IP）
+    // 用户标识(生产应换成签名校验后的用户 ID;demo 用 IP)
     const userId = request.headers.get("CF-Connecting-IP") || "anonymous";
 
     // 路径路由
     let kind = null;
     if (path.endsWith("/v1/chat/completions")) kind = "llm";
-    else if (path.endsWith("/v1/images/generations")) kind = "image";
+    else if (path.endsWith("/v1/images/generations") || path.endsWith("/v1/images/edits")) kind = "image";
 
     if (!kind) {
       return new Response(JSON.stringify({
@@ -158,7 +166,12 @@ export default {
     }
 
     // 供应商路由 + 熔断
-    const providers = PROVIDERS[kind];
+    let providers = PROVIDERS[kind];
+    if (kind === "image" && path.endsWith("/v1/images/edits")) {
+      // 图生图 multipart:只有 OpenAI 提供 /v1/images/edits,
+      // 避免把 multipart 请求发给不支持该端点的供应商(如 Together)而直接 4xx
+      providers = PROVIDERS.image.filter(p => p.name === "openai");
+    }
     const healthy = providers.filter(p => !isOpen(kind, p.name));
     const candidates = healthy.length > 0 ? healthy : providers; // 全熔断时降级尝试
 
@@ -179,7 +192,7 @@ export default {
     }
 
     return new Response(JSON.stringify({
-      error: { message: "所有 AI 供应商暂不可用，请稍后重试", type: "all_providers_down" },
+      error: { message: "所有 AI 供应商暂不可用,请稍后重试", type: "all_providers_down" },
     }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   },
 };

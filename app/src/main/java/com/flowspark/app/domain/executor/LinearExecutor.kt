@@ -13,23 +13,28 @@ import kotlinx.coroutines.flow.flow
 /**
  * 有序流水线执行器。
  *
- * 基于 [Flow]，每一步执行前调用 [kotlinx.coroutines.ensureActive]
- * 保证取消能立即传播（弥补 flatMapConcat 取消传播不及时的问题）。
+ * 基于 [Flow],每一步执行前调用 [kotlinx.coroutines.ensureActive]
+ * 保证取消能立即传播(弥补 flatMapConcat 取消传播不及时的问题)。
  *
  * @param localTools 本地图像工具注册表
- * @param cloudHandler 云端步骤处理器（文生图/图生图），可为空（离线模式）
+ * @param cloudHandler 云端步骤处理器(文生图/图生图),可为空(离线模式)
  */
 class LinearExecutor(
     private val localTools: ImageToolRegistry,
     private val cloudHandler: CloudStepHandler? = null,
 ) {
     /**
-     * 执行步骤序列，发出进度状态。
+     * 执行步骤序列,发出进度状态。
      *
      * @param steps 待执行步骤
-     * @param inputImage 输入图片（第一个需要输入图片的步骤开始使用）
+     * @param inputImage 输入图片(第一个需要输入图片的步骤开始使用)
+     * @param onResult 每步完成后的结果位图回调(外部可保存/展示最终结果)
      */
-    fun execute(steps: List<Step>, inputImage: Bitmap?): Flow<ExecutionState> = flow {
+    fun execute(
+        steps: List<Step>,
+        inputImage: Bitmap?,
+        onResult: ((Bitmap) -> Unit)? = null,
+    ): Flow<ExecutionState> = flow {
         var current: Bitmap? = inputImage
         val total = steps.size
         var index = 0
@@ -48,7 +53,7 @@ class LinearExecutor(
 
             current = when {
                 step.type.isCloud -> {
-                    requireNotNull(cloudHandler) { "云端步骤需要 CloudStepHandler，当前为离线模式" }
+                    requireNotNull(cloudHandler) { "云端步骤需要 CloudStepHandler,当前为离线模式" }
                     val result = cloudHandler.handle(step, current)
                     result
                 }
@@ -58,6 +63,11 @@ class LinearExecutor(
                     requireNotNull(current) { "本地工具 ${step.type} 需要输入图片" }
                     tool.apply(current, step.params)
                 }
+            }
+
+            // 把本步结果回传给外部(Service 用于落盘 + 广播回 UI)
+            if (current != null) {
+                onResult?.invoke(current)
             }
 
             emit(
@@ -83,7 +93,7 @@ class LinearExecutor(
     }
 }
 
-/** 云端步骤处理器：接收当前位图（可为 null），返回处理后的位图 */
+/** 云端步骤处理器:接收当前位图(可为 null),返回处理后的位图 */
 fun interface CloudStepHandler {
     suspend fun handle(step: Step, current: Bitmap?): Bitmap
 }

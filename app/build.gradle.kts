@@ -80,7 +80,10 @@ dependencies {
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation("androidx.room:room-common:2.6.1")
     ksp(libs.androidx.room.compiler)
+    // KSP 处理器需要 room-compiler-processing 传递的 room-common 类路径
+    ksp("androidx.room:room-compiler-processing:2.6.1")
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
@@ -90,6 +93,7 @@ dependencies {
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+    implementation("com.google.code.gson:gson:2.11.0")
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

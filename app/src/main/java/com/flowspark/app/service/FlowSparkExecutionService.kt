@@ -8,17 +8,15 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.flowspark.app.BuildConfig
+import androidx.core.content.FileProvider
 import com.flowspark.app.MainActivity
 import com.flowspark.app.R
 import com.flowspark.app.ai.AiClient
-import com.flowspark.app.ai.IntentParser
 import com.flowspark.app.ai.OpenAiCompatibleClient
 import com.flowspark.app.data.local.FlowSparkDatabase
 import com.flowspark.app.data.local.entity.HistoryEntity
@@ -29,6 +27,7 @@ import com.flowspark.app.domain.image.ImageToolRegistry
 import com.flowspark.app.domain.model.ExecutionState
 import com.flowspark.app.domain.model.Step
 import com.flowspark.app.domain.model.StepType
+import com.flowspark.app.util.BitmapLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,13 +40,15 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * 前台执行服务：保证工作流在后台/锁屏时不被杀死。
+ * 前台执行服务:保证工作流在后台/锁屏时不被杀死。
  *
- * 通过 Intent Extra 接收：
- *  - [EXTRA_STEPS_JSON]：步骤 JSON 数组
- *  - [EXTRA_INPUT_URI]：输入图片 Uri（可为空，文生图不需要）
+ * 通过 Intent Extra 接收:
+ *  - [EXTRA_STEPS_JSON]:步骤 JSON 数组
+ *  - [EXTRA_INPUT_URI]:输入图片 Uri(可为空,文生图不需要)
  *
- * 每步更新进度通知；结束/失败时发结果通知。
+ * 每步更新进度通知;结束/失败时:
+ *  - 把最终结果位图保存到 cacheDir 并通过 [ACTION_WORKFLOW_RESULT] 广播回 UI;
+ *  - 发结果通知。
  */
 class FlowSparkExecutionService : Service() {
 
@@ -76,20 +77,21 @@ class FlowSparkExecutionService : Service() {
         }
         val inputUriString = intent.getStringExtra(EXTRA_INPUT_URI)
 
-        // 前台通知（立即启动，避免 ANR）
-        startForeground(NOTIFICATION_ID, buildProgressNotification("准备中…", 0, 1))
+        // 前台通知(立即启动,避免 ANR)
+        startForeground(NOTIFICATION_ID, buildProgressNotification("准备中...", 0, 1))
 
         executionJob = serviceScope.launch {
             try {
                 val steps = parseSteps(stepsJson)
-                val inputBitmap = inputUriString?.let { loadBitmap(Uri.parse(it)) }
+                val inputBitmap = inputUriString?.let {
+                    BitmapLoader.loadScaled(this@FlowSparkExecutionService, Uri.parse(it))
+                }
 
-                // 读取供应商配置，构建 AiClient（配置来自 DataStore）
+                // 读取供应商配置,构建 AiClient(配置来自 DataStore)
                 val config = settings.aiProvider.first()
                 val aiClient: AiClient = OpenAiCompatibleClient(config)
-                val parser = IntentParser(aiClient)
 
-                // 云端步骤处理器：文生图 / 图生图
+                // 云端步骤处理器:文生图 / 图生图
                 val cloudHandler = CloudStepHandler { step, current ->
                     when (step.type) {
                         StepType.TEXT_TO_IMAGE -> {
@@ -110,12 +112,15 @@ class FlowSparkExecutionService : Service() {
                     cloudHandler = cloudHandler,
                 )
 
-                // 收集执行状态 → 更新通知
-                executor.execute(steps, inputBitmap).collect { state: ExecutionState ->
-                    updateProgressNotification(state)
-                }
+                // 收集执行状态 → 更新通知;同时接收每步结果,最终结果用于落盘回显
+                var finalResult: Bitmap? = null
+                executor.execute(steps, inputBitmap, onResult = { finalResult = it })
+                    .collect { state: ExecutionState ->
+                        updateProgressNotification(state)
+                    }
 
-                // 执行成功：记录历史
+                // 执行成功:保存结果 + 记录历史 + 广播回 UI
+                val resultUri = finalResult?.let { saveResultBitmap(it) }
                 database.historyDao().insert(
                     HistoryEntity(
                         summary = steps.firstOrNull()?.description ?: "工作流",
@@ -123,6 +128,7 @@ class FlowSparkExecutionService : Service() {
                         succeeded = true,
                     )
                 )
+                broadcastResult(success = true, uri = resultUri, error = null)
                 notifyFinished("工作流执行完成 ✅", null)
             } catch (e: Exception) {
                 database.historyDao().insert(
@@ -132,6 +138,7 @@ class FlowSparkExecutionService : Service() {
                         succeeded = false,
                     )
                 )
+                broadcastResult(success = false, uri = null, error = e.message)
                 notifyFinished("工作流执行失败 ❌", e.message)
             } finally {
                 stopSelf()
@@ -148,6 +155,35 @@ class FlowSparkExecutionService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    // ========== 结果回传 ==========
+
+    /**
+     * 把执行结果广播给本应用内的接收方(如 MainViewModel)。
+     * setPackage 限定只有自己应用能收到,防止外部应用伪造结果 / 窃取图片 URI。
+     */
+    private fun broadcastResult(success: Boolean, uri: Uri?, error: String?) {
+        val intent = Intent(ACTION_WORKFLOW_RESULT).apply {
+            setPackage(packageName)
+            putExtra(EXTRA_RESULT_SUCCESS, success)
+            uri?.let { putExtra(EXTRA_RESULT_URI, it.toString()) }
+            error?.let { putExtra(EXTRA_RESULT_ERROR, it) }
+        }
+        sendBroadcast(intent)
+    }
+
+    /** 把最终结果位图写入 cacheDir(FileProvider 已配置 cache-path),返回可展示的 content:// URI */
+    private fun saveResultBitmap(bitmap: Bitmap): Uri? = try {
+        val dir = File(cacheDir, "workflow_results")
+        if (!dir.exists()) dir.mkdirs()
+        val file = File(dir, "result_${System.currentTimeMillis()}.jpg")
+        FileOutputStream(file).use { out ->
+            if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) return null
+        }
+        FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+    } catch (e: Exception) {
+        null
+    }
 
     // ========== 通知 ==========
 
@@ -217,29 +253,6 @@ class FlowSparkExecutionService : Service() {
         }
     }
 
-    private fun loadBitmap(uri: Uri): Bitmap? {
-        val resolver = contentResolver
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
-        val opts = BitmapFactory.Options()
-        opts.inSampleSize = calculateInSampleSize(bounds.outWidth, bounds.outHeight, 2048)
-        return resolver.openInputStream(uri)?.use {
-            BitmapFactory.decodeStream(it, null, opts)
-        }
-    }
-
-    private fun calculateInSampleSize(w: Int, h: Int, maxDim: Int): Int {
-        var sample = 1
-        var width = w
-        var height = h
-        while (width > maxDim || height > maxDim) {
-            sample *= 2
-            width /= 2
-            height /= 2
-        }
-        return sample
-    }
-
     companion object {
         private const val CHANNEL_ID = "flowspark_execution"
         private const val NOTIFICATION_ID = 1001
@@ -248,7 +261,13 @@ class FlowSparkExecutionService : Service() {
         const val EXTRA_STEPS_JSON = "extra_steps_json"
         const val EXTRA_INPUT_URI = "extra_input_uri"
 
-        /** 构造启动 Intent（Activity/ViewModel 侧使用） */
+        /** 工作流执行结果广播(仅本应用可接收) */
+        const val ACTION_WORKFLOW_RESULT = "com.flowspark.app.action.WORKFLOW_RESULT"
+        const val EXTRA_RESULT_SUCCESS = "extra_result_success"
+        const val EXTRA_RESULT_URI = "extra_result_uri"
+        const val EXTRA_RESULT_ERROR = "extra_result_error"
+
+        /** 构造启动 Intent(Activity/ViewModel 侧使用) */
         fun startIntent(
             context: Context,
             stepsJson: String,

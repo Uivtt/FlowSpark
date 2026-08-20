@@ -122,6 +122,6 @@ private val StepType.displayName: String
 
 private val StepType.icon: ImageVector
     get() = when (this) {
-        StepType.TEXT_TO_IMAGE, StepType.IMAGE_TO_IMAGE -> Icons.Default.Image
-        else -> Icons.Default.Tune
+        StepType.TEXT_TO_IMAGE, StepType.IMAGE_TO_IMAGE -> Icons.Filled.Image
+        else -> Icons.Filled.Tune
     }

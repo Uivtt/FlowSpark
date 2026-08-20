@@ -55,7 +55,7 @@ fun ChatInputBar(
             enabled = enabled && text.isNotBlank(),
         ) {
             Icon(
-                imageVector = Icons.Default.Send,
+                imageVector = Icons.Filled.Send,
                 contentDescription = "发送",
             )
         }
